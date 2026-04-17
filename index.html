@@ -1,191 +1,481 @@
-
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CHC Energía — Dashboard de campañas</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:var(--font-sans)}
-.dash{padding:1rem 0}
+:root{
+  --bg0:#ffffff;--bg1:#f5f5f2;--bg2:#ebebea;
+  --txt0:#1a1a1a;--txt1:#555550;--txt2:#888780;
+  --border0:rgba(0,0,0,0.15);--border1:rgba(0,0,0,0.1);
+  --radius-md:8px;--radius-lg:12px;
+  --font:system-ui,-apple-system,sans-serif;
+  --spotify:#1DB954
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg0:#1e1e1c;--bg1:#2a2a28;--bg2:#333330;
+  --txt0:#f0ede8;--txt1:#aaa89f;--txt2:#6e6c67;
+  --border0:rgba(255,255,255,0.15);--border1:rgba(255,255,255,0.08)
+}}
+body{font-family:var(--font);background:var(--bg1);color:var(--txt0);min-height:100vh}
+.page{max-width:1200px;margin:0 auto;padding:1.5rem 1.5rem 3rem}
 .header{margin-bottom:1.5rem}
-.header h1{font-size:20px;font-weight:500;color:var(--color-text-primary)}
-.header p{font-size:13px;color:var(--color-text-secondary);margin-top:4px}
-.section-title{font-size:13px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.05em;margin:1.5rem 0 .75rem}
+.header h1{font-size:20px;font-weight:500;color:var(--txt0)}
+.header p{font-size:13px;color:var(--txt1);margin-top:4px}
+.nav{display:flex;gap:0;border-bottom:0.5px solid var(--border0);margin-bottom:1.5rem}
+.nav-btn{padding:8px 18px;font-size:13px;font-weight:500;color:var(--txt1);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;transition:.15s;margin-bottom:-0.5px}
+.nav-btn:hover{color:var(--txt0)}
+.nav-btn.active{color:#0C447C;border-bottom-color:#378ADD}
+.nav-btn.sp-active{color:#0a6b30;border-bottom-color:var(--spotify)}
+@media(prefers-color-scheme:dark){.nav-btn.active{color:#85B7EB;border-bottom-color:#378ADD}.nav-btn.sp-active{color:#1DB954;border-bottom-color:var(--spotify)}}
+.sec-title{font-size:11px;font-weight:500;color:var(--txt2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.75rem}
 .kpi-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:1.5rem}
-.kpi{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:.9rem 1rem}
-.kpi-label{font-size:12px;color:var(--color-text-secondary);margin-bottom:4px}
-.kpi-value{font-size:22px;font-weight:500;color:var(--color-text-primary)}
-.kpi-sub{font-size:11px;color:var(--color-text-tertiary);margin-top:2px}
-.tabs{display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap}
-.tab{padding:5px 12px;border:0.5px solid var(--color-border-secondary);border-radius:20px;font-size:12px;cursor:pointer;background:transparent;color:var(--color-text-secondary);transition:.15s}
-.tab.active{background:var(--color-background-primary);border-color:var(--color-border-primary);color:var(--color-text-primary);font-weight:500}
-.tab:hover:not(.active){background:var(--color-background-secondary)}
+.kpi{background:var(--bg2);border-radius:var(--radius-md);padding:.9rem 1rem}
+.kpi-label{font-size:12px;color:var(--txt1);margin-bottom:4px}
+.kpi-value{font-size:22px;font-weight:500;color:var(--txt0)}
+.kpi-sub{font-size:11px;color:var(--txt2);margin-top:2px}
+.card{background:var(--bg0);border:0.5px solid var(--border0);border-radius:var(--radius-lg);padding:1rem 1.25rem}
+.card-title{font-size:13px;font-weight:500;color:var(--txt1);margin-bottom:.75rem}
 .charts-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:1.5rem}
-.chart-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1rem 1.25rem}
-.chart-title{font-size:13px;font-weight:500;color:var(--color-text-secondary);margin-bottom:.75rem}
 .chart-wrap{position:relative;width:100%;height:200px}
-.table-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1rem 1.25rem;margin-bottom:1.5rem}
 table{width:100%;border-collapse:collapse;font-size:13px}
-th{text-align:left;font-weight:500;color:var(--color-text-secondary);padding:6px 8px;border-bottom:0.5px solid var(--color-border-tertiary)}
-td{padding:7px 8px;color:var(--color-text-primary);border-bottom:0.5px solid var(--color-border-tertiary)}
+th{text-align:left;font-weight:500;color:var(--txt1);padding:6px 8px;border-bottom:0.5px solid var(--border0)}
+td{padding:7px 8px;color:var(--txt0);border-bottom:0.5px solid var(--border1)}
 tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--bg1)}
 .badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:500}
-.badge-blue{background:#E6F1FB;color:#0C447C}
-.badge-green{background:#EAF3DE;color:#3B6D11}
-.badge-amber{background:#FAEEDA;color:#854F0B}
-.badge-red{background:#FCEBEB;color:#A32D2D}
-.progress-wrap{background:var(--color-background-secondary);border-radius:4px;height:6px;flex:1}
-.progress-bar{height:6px;border-radius:4px;background:#378ADD}
-.legend{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:8px;font-size:11px;color:var(--color-text-secondary)}
-.leg-dot{width:10px;height:10px;border-radius:2px;display:inline-block;margin-right:4px}
-</style>
+.b-green{background:#EAF3DE;color:#3B6D11}
+.b-blue{background:#E6F1FB;color:#0C447C}
+.b-amber{background:#FAEEDA;color:#854F0B}
+.prog-wrap{display:flex;align-items:center;gap:8px}
+.prog-bg{flex:1;background:var(--bg2);border-radius:4px;height:6px;min-width:60px}
+.prog-fill{height:6px;border-radius:4px}
+.prog-pct{font-size:11px;color:var(--txt1);min-width:34px;text-align:right}
+.legend{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:8px}
+.leg-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--txt1)}
+.leg-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+.loc-tabs{display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap}
+.loc-tab{padding:5px 12px;border:0.5px solid var(--border0);border-radius:20px;font-size:12px;cursor:pointer;background:transparent;color:var(--txt1);transition:.15s}
+.loc-tab.active{background:var(--bg0);border-color:var(--border0);color:var(--txt0);font-weight:500}
+.loc-tab:hover:not(.active){background:var(--bg2)}
+.loc-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:1.5rem}
+.loc-card{background:var(--bg0);border:0.5px solid var(--border1);border-radius:var(--radius-lg);padding:1rem 1.1rem;cursor:pointer;transition:.15s}
+.loc-card:hover{border-color:var(--border0)}
+.loc-card.selected{border-color:var(--txt0)}
+.loc-name{font-size:13px;font-weight:500;color:var(--txt0);margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.loc-meta{font-size:10px;color:var(--txt2);margin-bottom:8px}
+.loc-kpis{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
+.lk{background:var(--bg1);border-radius:var(--radius-md);padding:6px 8px}
+.lk-label{font-size:10px;color:var(--txt2);margin-bottom:2px}
+.lk-val{font-size:14px;font-weight:500;color:var(--txt0)}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.ranking-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--border1)}
+.ranking-row:last-child{border-bottom:none}
+.rank-num{font-size:12px;color:var(--txt2);width:16px;flex-shrink:0}
+.rank-name{font-size:13px;color:var(--txt0);flex:1}
+.rank-bar-wrap{width:120px;background:var(--bg2);border-radius:3px;height:6px;flex-shrink:0}
+.rank-bar{height:6px;border-radius:3px}
+.rank-val{font-size:12px;color:var(--txt1);min-width:52px;text-align:right}
+.cr-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-top:.5rem}
+.cr-card{background:var(--bg1);border-radius:var(--radius-md);padding:.6rem .7rem;text-align:center;border:0.5px solid transparent}
+.cr-fmt{font-size:11px;color:var(--txt1);margin-bottom:4px}
+.cr-imp{font-size:14px;font-weight:500;color:var(--txt0)}
+.cr-ctr{font-size:11px;color:var(--txt2);margin-top:2px}
+.cr-best{font-size:9px;font-weight:500;margin-top:3px}
+.insight-box{background:var(--bg1);border-radius:var(--radius-md);padding:.75rem 1rem;margin-top:.75rem;font-size:13px;color:var(--txt1);line-height:1.6}
+.insight-box strong{font-weight:500;color:var(--txt0)}
+.view{display:none}
+.view.active{display:block}
 
-<div class="dash">
-<h2 class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden">Dashboard de control de campañas CHC Energía por localidad</h2>
+/* Spotify */
+.sp-header{display:flex;align-items:center;gap:12px;margin-bottom:1.5rem;padding:.9rem 1.1rem;background:var(--bg0);border:0.5px solid var(--border0);border-radius:var(--radius-lg)}
+.sp-header-text h2{font-size:15px;font-weight:500;color:var(--txt0)}
+.sp-header-text p{font-size:12px;color:var(--txt1);margin-top:2px}
+.sp-loc-tab{padding:5px 14px;border:0.5px solid var(--border0);border-radius:20px;font-size:12px;cursor:pointer;background:transparent;color:var(--txt1);transition:.15s}
+.sp-loc-tab.active{background:var(--spotify);border-color:var(--spotify);color:#fff;font-weight:500}
+.sp-loc-tab:hover:not(.active){background:var(--bg2)}
+.sp-note{font-size:12px;color:var(--txt2);font-style:italic;margin-top:.75rem}
+.tr-total td{background:var(--bg1);font-weight:500}
+
+@media(max-width:640px){
+  .kpi-grid{grid-template-columns:1fr 1fr}
+  .charts-row{grid-template-columns:1fr}
+  .loc-grid{grid-template-columns:1fr 1fr}
+  .cr-grid{grid-template-columns:repeat(3,1fr)}
+}
+</style>
+</head>
+<body>
+<div class="page">
 
 <div class="header">
   <h1>CHC Energía — Control de campañas</h1>
   <p>Periodo activo: Abr – May 2026 · Modelo: CPM · 6 localidades</p>
 </div>
 
-<div class="kpi-grid" id="kpiGlobal"></div>
+<div class="nav">
+  <button class="nav-btn active" id="nb-resumen" onclick="switchView('resumen','nb-resumen',false)">Resumen general</button>
+  <button class="nav-btn" id="nb-localidades" onclick="switchView('localidades','nb-localidades',false)">Análisis por localidad</button>
+  <button class="nav-btn" id="nb-spotify" onclick="switchView('spotify','nb-spotify',true)">Spotify</button>
+</div>
 
-<div class="section-title">Vista por localidad</div>
-<div class="tabs" id="tabs"></div>
-
-<div class="charts-row">
-  <div class="chart-card">
-    <div class="chart-title">Impresiones diarias</div>
-    <div class="legend" id="leg1"></div>
-    <div class="chart-wrap"><canvas id="chartImpr" role="img" aria-label="Impresiones diarias por localidad"></canvas></div>
+<!-- ========== VIEW 1 ========== -->
+<div class="view active" id="view-resumen">
+  <div class="sec-title">KPIs globales</div>
+  <div class="kpi-grid" id="kpiGlobal"></div>
+  <div class="sec-title">Vista por localidad</div>
+  <div class="loc-tabs" id="tabs"></div>
+  <div class="charts-row">
+    <div class="card">
+      <div class="card-title">Impresiones diarias</div>
+      <div class="legend" id="leg1"></div>
+      <div class="chart-wrap"><canvas id="chartImpr"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">CTR diario (%)</div>
+      <div class="legend" id="leg2"></div>
+      <div class="chart-wrap"><canvas id="chartCtr"></canvas></div>
+    </div>
   </div>
-  <div class="chart-card">
-    <div class="chart-title">CTR diario (%)</div>
-    <div class="legend" id="leg2"></div>
-    <div class="chart-wrap"><canvas id="chartCtr" role="img" aria-label="CTR diario por localidad"></canvas></div>
+  <div class="card" style="margin-bottom:1.5rem">
+    <div class="card-title">Resumen por localidad</div>
+    <div style="overflow-x:auto">
+    <table><thead><tr><th>Localidad</th><th>Fechas</th><th>Objetivo</th><th>Impresiones</th><th>Clicks</th><th>CTR medio</th><th>% objetivo</th><th>Estado</th></tr></thead>
+    <tbody id="tableBody"></tbody></table>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title" id="creativeTitle">Creatividades — todas las localidades</div>
+    <div style="overflow-x:auto">
+    <table><thead><tr><th>Localidad</th><th>Creatividad</th><th>Impresiones</th><th>Clics</th><th>CTR</th></tr></thead>
+    <tbody id="creativeBody"></tbody></table>
+    </div>
   </div>
 </div>
 
-<div class="table-card">
-  <div class="chart-title">Resumen por localidad</div>
-  <table id="tableResumen">
-    <thead><tr><th>Localidad</th><th>Fechas</th><th>Objetivo</th><th>Impressiones</th><th>Clicks</th><th>CTR medio</th><th>% objetivo</th><th>Estado</th></tr></thead>
-    <tbody id="tableBody"></tbody>
-  </table>
+<!-- ========== VIEW 2 ========== -->
+<div class="view" id="view-localidades">
+  <div class="sec-title">Rendimiento por localidad — selecciona para detalles</div>
+  <div class="loc-grid" id="locGrid"></div>
+  <div class="sec-title">Rankings comparativos</div>
+  <div class="charts-row" style="margin-bottom:1.5rem">
+    <div class="card"><div class="card-title">Impresiones acumuladas</div><div id="rankImpr"></div></div>
+    <div class="card"><div class="card-title">CTR medio (%)</div><div id="rankCtr"></div></div>
+  </div>
+  <div class="sec-title">Comparativa visual</div>
+  <div class="charts-row" style="margin-bottom:1.5rem">
+    <div class="card"><div class="card-title">Impresiones vs objetivo</div><div style="position:relative;height:240px"><canvas id="c1"></canvas></div></div>
+    <div class="card"><div class="card-title">CTR por localidad (%)</div><div style="position:relative;height:240px"><canvas id="c2"></canvas></div></div>
+  </div>
+  <div class="sec-title" id="detailTitle">Detalle de creatividades — todas las localidades</div>
+  <div id="creativeDetail"></div>
 </div>
 
-<div class="table-card" id="creativeCard">
-  <div class="chart-title" id="creativeTitle">Creatividades</div>
-  <table>
-    <thead><tr><th>Creatividad</th><th>Impresiones</th><th>Clics</th><th>CTR</th></tr></thead>
-    <tbody id="creativeBody"></tbody>
-  </table>
-</div>
+<!-- ========== VIEW 3: SPOTIFY ========== -->
+<div class="view" id="view-spotify">
 
+  <div class="sp-header">
+    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="16" cy="16" r="16" fill="#1DB954"/>
+      <path d="M22.7 22.2a1 1 0 01-1.37.33c-3.77-2.3-8.52-2.82-14.1-1.55a1 1 0 01-.45-1.94c6.1-1.4 11.35-.8 15.58 1.78a1 1 0 01.34 1.38zm1.95-4.34a1.25 1.25 0 01-1.72.41c-4.32-2.65-10.9-3.42-16.02-1.87a1.25 1.25 0 01-.73-2.39c5.83-1.78 13.09-.9 18.06 2.13a1.25 1.25 0 01.41 1.72zm.17-4.52C19.6 9.8 10.9 9.53 6.17 10.98a1.5 1.5 0 01-.88-2.86c5.5-1.69 14.64-.97 20.42 2.48a1.5 1.5 0 01-1.89 2.34z" fill="white"/>
+    </svg>
+    <div class="sp-header-text">
+      <h2>Spotify Ads — CHC Energía</h2>
+      <p>Campañas de audio · 06/04 – 15/04/2026 · 4 localidades</p>
+    </div>
+  </div>
+
+  <div class="sec-title">KPIs globales Spotify</div>
+  <div class="kpi-grid" id="spKpiGlobal"></div>
+
+  <div class="sec-title">Detalle por localidad</div>
+  <div class="loc-tabs" id="spLocTabs"></div>
+
+  <div class="charts-row">
+    <div class="card">
+      <div class="card-title">Impresiones diarias</div>
+      <div style="position:relative;height:240px"><canvas id="spChartImpr"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Clics diarios</div>
+      <div style="position:relative;height:240px"><canvas id="spChartClk"></canvas></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:1.5rem">
+    <div class="card-title" id="spTableTitle">Datos diarios — todas las localidades</div>
+    <div style="overflow-x:auto">
+    <table><thead><tr><th>Localidad</th><th>Fecha</th><th>Impresiones</th><th>Clics</th><th>CTR</th></tr></thead>
+    <tbody id="spTableBody"></tbody></table>
+    </div>
+  </div>
+
+  <div class="sec-title">Ranking Spotify por localidad</div>
+  <div class="charts-row" style="margin-bottom:1.5rem">
+    <div class="card"><div class="card-title">Impresiones acumuladas</div><div id="spRankImpr"></div></div>
+    <div class="card"><div class="card-title">CTR medio</div><div id="spRankCtr"></div></div>
+  </div>
+
+  <div class="sec-title">Spotify vs Display — impresiones acumuladas por localidad</div>
+  <div class="card" style="margin-bottom:1.5rem">
+    <div class="card-title">Display (barras) vs Spotify (línea) · localidades con datos en ambos canales</div>
+    <div style="position:relative;height:260px"><canvas id="spVsDisplay"></canvas></div>
+    <p class="sp-note">* El CTR de audio en Spotify es estructuralmente inferior al display (el anuncio se reproduce sin interacción activa del usuario). Los valores de CTR Spotify se expresan en tanto por diez mil (‱) para mayor legibilidad.</p>
+  </div>
+
+</div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
-const RAW = {
-  "Roquetas de Mar":{fechas:"06/04 – 31/05/2026",objetivo:88889,modelo:"CPM",daily:[{d:"06/04",imp:1850,clk:48},{d:"07/04",imp:1931,clk:26},{d:"08/04",imp:1937,clk:16},{d:"09/04",imp:1599,clk:23},{d:"10/04",imp:1310,clk:11},{d:"11/04",imp:1345,clk:8},{d:"12/04",imp:1384,clk:12},{d:"13/04",imp:904,clk:8}],creatives:[{n:"320x50",imp:7211,clk:60},{n:"300x250",imp:3431,clk:33},{n:"728x90",imp:1049,clk:27},{n:"300x600",imp:383,clk:16},{n:"320x480",imp:186,clk:16}]},
-  "Zahara de los Atunes":{fechas:"06/04 – 31/05/2026",objetivo:118778,modelo:"CPM",daily:[{d:"06/04",imp:3024,clk:36},{d:"07/04",imp:3148,clk:24},{d:"08/04",imp:3191,clk:18},{d:"09/04",imp:3006,clk:15},{d:"10/04",imp:3010,clk:14},{d:"11/04",imp:2234,clk:9},{d:"12/04",imp:2416,clk:7},{d:"13/04",imp:2375,clk:13}],creatives:[{n:"320x50",imp:12973,clk:50},{n:"300x250",imp:5406,clk:30},{n:"728x90",imp:3409,clk:31},{n:"300x600",imp:423,clk:12},{n:"320x480",imp:193,clk:13}]},
-  "Albox":{fechas:"06/04 – 31/05/2026",objetivo:122222,modelo:"CPM",daily:[{d:"06/04",imp:1000,clk:0},{d:"07/04",imp:1021,clk:2},{d:"08/04",imp:1274,clk:32},{d:"09/04",imp:1345,clk:36},{d:"10/04",imp:2374,clk:13},{d:"11/04",imp:2352,clk:10},{d:"13/04",imp:2232,clk:12}],creatives:[{n:"320x50",imp:8736,clk:46},{n:"300x250",imp:3122,clk:24},{n:"728x90",imp:1608,clk:25},{n:"300x600",imp:226,clk:12},{n:"320x480",imp:163,clk:11}]},
-  "Águilas":{fechas:"06/04 – 31/05/2026",objetivo:77778,modelo:"CPM",daily:[{d:"06/04",imp:1715,clk:32},{d:"07/04",imp:1561,clk:18},{d:"08/04",imp:1583,clk:11},{d:"09/04",imp:1543,clk:9},{d:"10/04",imp:1721,clk:6},{d:"11/04",imp:1603,clk:17},{d:"12/04",imp:1659,clk:10},{d:"13/04",imp:1543,clk:11}],creatives:[{n:"320x50",imp:7520,clk:43},{n:"300x250",imp:3116,clk:26},{n:"728x90",imp:1889,clk:21},{n:"300x600",imp:302,clk:12},{n:"320x480",imp:101,clk:12}]},
-  "La Felguera":{fechas:"19/03 – 30/04/2026",objetivo:88889,modelo:"CPM",daily:[],creatives:[{n:"320x50",imp:12365,clk:38},{n:"300x250",imp:8328,clk:24},{n:"728x90",imp:6013,clk:26},{n:"300x600",imp:1950,clk:23},{n:"320x480",imp:934,clk:16}]},
-  "Almanzora Vera Garrucha":{fechas:"13/04 – 31/05/2026",objetivo:501111,modelo:"CPM",daily:[],creatives:[{n:"320x50",imp:2633,clk:15},{n:"300x250",imp:1192,clk:15},{n:"728x90",imp:384,clk:7},{n:"300x600",imp:205,clk:6},{n:"320x480",imp:67,clk:7}]}
+/* ===== DATA DISPLAY ===== */
+const RAW={
+  "Roquetas de Mar":{color:"#378ADD",fechas:"06/04–31/05/2026",objetivo:88889,daily:[{d:"06/04",imp:1850,clk:48},{d:"07/04",imp:1931,clk:26},{d:"08/04",imp:1937,clk:16},{d:"09/04",imp:1599,clk:23},{d:"10/04",imp:1310,clk:11},{d:"11/04",imp:1345,clk:8},{d:"12/04",imp:1384,clk:12},{d:"13/04",imp:904,clk:8}],creatives:[{n:"320x50",imp:7211,clk:60},{n:"300x250",imp:3431,clk:33},{n:"728x90",imp:1049,clk:27},{n:"300x600",imp:383,clk:16},{n:"320x480",imp:186,clk:16}]},
+  "Zahara de los Atunes":{color:"#1D9E75",fechas:"06/04–31/05/2026",objetivo:118778,daily:[{d:"06/04",imp:3024,clk:36},{d:"07/04",imp:3148,clk:24},{d:"08/04",imp:3191,clk:18},{d:"09/04",imp:3006,clk:15},{d:"10/04",imp:3010,clk:14},{d:"11/04",imp:2234,clk:9},{d:"12/04",imp:2416,clk:7},{d:"13/04",imp:2375,clk:13}],creatives:[{n:"320x50",imp:12973,clk:50},{n:"300x250",imp:5406,clk:30},{n:"728x90",imp:3409,clk:31},{n:"300x600",imp:423,clk:12},{n:"320x480",imp:193,clk:13}]},
+  "Albox":{color:"#D85A30",fechas:"06/04–31/05/2026",objetivo:122222,daily:[{d:"06/04",imp:1000,clk:0},{d:"07/04",imp:1021,clk:2},{d:"08/04",imp:1274,clk:32},{d:"09/04",imp:1345,clk:36},{d:"10/04",imp:2374,clk:13},{d:"11/04",imp:2352,clk:10},{d:"13/04",imp:2232,clk:12}],creatives:[{n:"320x50",imp:8736,clk:46},{n:"300x250",imp:3122,clk:24},{n:"728x90",imp:1608,clk:25},{n:"300x600",imp:226,clk:12},{n:"320x480",imp:163,clk:11}]},
+  "Águilas":{color:"#7F77DD",fechas:"06/04–31/05/2026",objetivo:77778,daily:[{d:"06/04",imp:1715,clk:32},{d:"07/04",imp:1561,clk:18},{d:"08/04",imp:1583,clk:11},{d:"09/04",imp:1543,clk:9},{d:"10/04",imp:1721,clk:6},{d:"11/04",imp:1603,clk:17},{d:"12/04",imp:1659,clk:10},{d:"13/04",imp:1543,clk:11}],creatives:[{n:"320x50",imp:7520,clk:43},{n:"300x250",imp:3116,clk:26},{n:"728x90",imp:1889,clk:21},{n:"300x600",imp:302,clk:12},{n:"320x480",imp:101,clk:12}]},
+  "La Felguera":{color:"#BA7517",fechas:"19/03–30/04/2026",objetivo:88889,daily:[],creatives:[{n:"320x50",imp:12365,clk:38},{n:"300x250",imp:8328,clk:24},{n:"728x90",imp:6013,clk:26},{n:"300x600",imp:1950,clk:23},{n:"320x480",imp:934,clk:16}]},
+  "Almanzora Vera Garrucha":{color:"#D4537E",fechas:"13/04–31/05/2026",objetivo:501111,daily:[],creatives:[{n:"320x50",imp:2633,clk:15},{n:"300x250",imp:1192,clk:15},{n:"728x90",imp:384,clk:7},{n:"300x600",imp:205,clk:6},{n:"320x480",imp:67,clk:7}]}
 };
 
-const COLORS=["#378ADD","#1D9E75","#D85A30","#D4537E","#7F77DD","#639922"];
-const localidades=Object.keys(RAW);
+/* ===== DATA SPOTIFY ===== */
+const SP={
+  "Zahara de los Atunes":{color:"#1D9E75",daily:[
+    {d:"06/04",imp:3170,clk:2},{d:"07/04",imp:5270,clk:3},{d:"08/04",imp:5408,clk:2},
+    {d:"09/04",imp:5265,clk:0},{d:"10/04",imp:5944,clk:1},{d:"11/04",imp:5747,clk:2},
+    {d:"12/04",imp:5594,clk:1},{d:"13/04",imp:5504,clk:3},{d:"14/04",imp:5830,clk:5},{d:"15/04",imp:2433,clk:0}
+  ]},
+  "Roquetas de Mar":{color:"#378ADD",daily:[
+    {d:"06/04",imp:2334,clk:0},{d:"07/04",imp:4053,clk:1},{d:"08/04",imp:4006,clk:1},
+    {d:"09/04",imp:4221,clk:0},{d:"10/04",imp:4148,clk:0},{d:"11/04",imp:4198,clk:0},
+    {d:"12/04",imp:4307,clk:0},{d:"13/04",imp:4244,clk:2},{d:"14/04",imp:4058,clk:0},{d:"15/04",imp:1838,clk:0}
+  ]},
+  "Albox":{color:"#D85A30",daily:[
+    {d:"06/04",imp:2504,clk:0},{d:"07/04",imp:4375,clk:3},{d:"08/04",imp:4350,clk:0},
+    {d:"09/04",imp:4298,clk:0},{d:"10/04",imp:4174,clk:4},{d:"11/04",imp:4494,clk:1},
+    {d:"12/04",imp:4414,clk:1},{d:"13/04",imp:4212,clk:1},{d:"14/04",imp:4521,clk:3},{d:"15/04",imp:1856,clk:0}
+  ]},
+  "Águilas":{color:"#7F77DD",daily:[
+    {d:"06/04",imp:1662,clk:0},{d:"07/04",imp:3364,clk:0},{d:"08/04",imp:2965,clk:0},
+    {d:"09/04",imp:3025,clk:0},{d:"10/04",imp:2787,clk:0},{d:"11/04",imp:3089,clk:1},
+    {d:"12/04",imp:3585,clk:0},{d:"13/04",imp:3303,clk:0},{d:"14/04",imp:3363,clk:0},{d:"15/04",imp:1605,clk:0}
+  ]}
+};
 
-function totalImp(k){return RAW[k].daily.reduce((s,r)=>s+r.imp,0)||(RAW[k].creatives.reduce((s,c)=>s+c.imp,0))}
-function totalClk(k){return RAW[k].daily.reduce((s,r)=>s+r.clk,0)||(RAW[k].creatives.reduce((s,c)=>s+c.clk,0))}
-function ctrMedio(k){const i=totalImp(k),c=totalClk(k);return i>0?(c/i*100):0}
+const spLocs=Object.keys(SP);
+function spTotalImp(k){return SP[k].daily.reduce((s,r)=>s+r.imp,0)}
+function spTotalClk(k){return SP[k].daily.reduce((s,r)=>s+r.clk,0)}
+function spCtr(k){const i=spTotalImp(k),c=spTotalClk(k);return i>0?c/i:0}
+
+/* ===== DISPLAY HELPERS ===== */
+const locs=Object.keys(RAW);
+function totalImp(k){const d=RAW[k].daily;return d.length?d.reduce((s,r)=>s+r.imp,0):RAW[k].creatives.reduce((s,c)=>s+c.imp,0)}
+function totalClk(k){const d=RAW[k].daily;return d.length?d.reduce((s,r)=>s+r.clk,0):RAW[k].creatives.reduce((s,c)=>s+c.clk,0)}
+function ctrMedio(k){const i=totalImp(k),c=totalClk(k);return i>0?c/i*100:0}
 function pctObj(k){return Math.min(totalImp(k)/RAW[k].objetivo*100,100)}
+function dailyAvg(k){const d=RAW[k].daily;return d.length?d.reduce((s,r)=>s+r.imp,0)/d.length:0}
+function bestCr(k){return RAW[k].creatives.reduce((best,c)=>{const r=c.imp>0?c.clk/c.imp:0,rb=best.imp>0?best.clk/best.imp:0;return r>rb?c:best},RAW[k].creatives[0])}
+function badgeHTML(pct){
+  if(pct>=80)return`<span class="badge b-green">En objetivo</span>`;
+  if(pct>=15)return`<span class="badge b-blue">En curso</span>`;
+  return`<span class="badge b-amber">Inicio</span>`;
+}
 
-// KPIs globales
-const totalImps=localidades.reduce((s,k)=>s+totalImp(k),0);
-const totalClks=localidades.reduce((s,k)=>s+totalClk(k),0);
-const totalObj=localidades.reduce((s,k)=>s+RAW[k].objetivo,0);
-const globalCtr=(totalClks/totalImps*100);
-const globalPct=(totalImps/totalObj*100);
+/* ===== NAV ===== */
+function switchView(id,btnId,isSpotify){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>{b.classList.remove('active');b.classList.remove('sp-active')});
+  document.getElementById('view-'+id).classList.add('active');
+  const btn=document.getElementById(btnId);
+  if(isSpotify){btn.classList.add('sp-active');}else{btn.classList.add('active');}
+}
 
+/* ===== VIEW 1 ===== */
+const totalImps=locs.reduce((s,k)=>s+totalImp(k),0);
+const totalClks=locs.reduce((s,k)=>s+totalClk(k),0);
+const totalObj=locs.reduce((s,k)=>s+RAW[k].objetivo,0);
 document.getElementById("kpiGlobal").innerHTML=`
 <div class="kpi"><div class="kpi-label">Impresiones totales</div><div class="kpi-value">${(totalImps/1000).toFixed(1)}k</div><div class="kpi-sub">de ${(totalObj/1000).toFixed(0)}k objetivo</div></div>
 <div class="kpi"><div class="kpi-label">Clicks totales</div><div class="kpi-value">${totalClks.toLocaleString()}</div><div class="kpi-sub">acumulados</div></div>
-<div class="kpi"><div class="kpi-label">CTR global</div><div class="kpi-value">${globalCtr.toFixed(2)}%</div><div class="kpi-sub">clicks / impresiones</div></div>
-<div class="kpi"><div class="kpi-label">Cumplimiento global</div><div class="kpi-value">${globalPct.toFixed(1)}%</div><div class="kpi-sub">${localidades.length} localidades activas</div></div>`;
+<div class="kpi"><div class="kpi-label">CTR global</div><div class="kpi-value">${(totalClks/totalImps*100).toFixed(2)}%</div><div class="kpi-sub">clicks / impresiones</div></div>
+<div class="kpi"><div class="kpi-label">Cumplimiento global</div><div class="kpi-value">${(totalImps/totalObj*100).toFixed(1)}%</div><div class="kpi-sub">${locs.length} localidades activas</div></div>`;
 
-// Tabla resumen
 const tbody=document.getElementById("tableBody");
-localidades.forEach((k,i)=>{
+locs.forEach(k=>{
   const imp=totalImp(k),clk=totalClk(k),ctr=ctrMedio(k),pct=pctObj(k);
-  let badge,bclass;
-  if(pct>=80){badge="En objetivo";bclass="badge-green";}
-  else if(pct>=30){badge="En curso";bclass="badge-blue";}
-  else{badge="Inicio";bclass="badge-amber";}
-  tbody.innerHTML+=`<tr>
-    <td><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${COLORS[i]};margin-right:6px"></span>${k}</td>
-    <td>${RAW[k].fechas}</td>
-    <td>${RAW[k].objetivo.toLocaleString()}</td>
-    <td>${imp.toLocaleString()}</td>
-    <td>${clk.toLocaleString()}</td>
-    <td>${ctr.toFixed(2)}%</td>
-    <td style="min-width:120px"><div style="display:flex;align-items:center;gap:8px"><div class="progress-wrap"><div class="progress-bar" style="width:${pct.toFixed(1)}%;background:${COLORS[i]}"></div></div><span style="font-size:11px;min-width:34px;text-align:right">${pct.toFixed(1)}%</span></div></td>
-    <td><span class="badge ${bclass}">${badge}</span></td>
-  </tr>`;
+  let badge,bc;if(pct>=80){badge="En objetivo";bc="b-green";}else if(pct>=30){badge="En curso";bc="b-blue";}else{badge="Inicio";bc="b-amber";}
+  tbody.innerHTML+=`<tr><td><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${RAW[k].color};margin-right:6px"></span>${k}</td><td>${RAW[k].fechas}</td><td>${RAW[k].objetivo.toLocaleString()}</td><td>${imp.toLocaleString()}</td><td>${clk.toLocaleString()}</td><td>${ctr.toFixed(2)}%</td><td style="min-width:120px"><div class="prog-wrap"><div class="prog-bg"><div class="prog-fill" style="width:${pct.toFixed(1)}%;background:${RAW[k].color}"></div></div><span class="prog-pct">${pct.toFixed(1)}%</span></div></td><td><span class="badge ${bc}">${badge}</span></td></tr>`;
 });
 
-// Tabs
 let activeTab="all";
 const tabsEl=document.getElementById("tabs");
-[{id:"all",label:"Todas"},...localidades.map((k,i)=>({id:k,label:k}))].forEach(t=>{
-  const b=document.createElement("button");
-  b.className="tab"+(t.id==="all"?" active":"");
-  b.textContent=t.label;
-  b.onclick=()=>{activeTab=t.id;document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));b.classList.add("active");updateCharts();updateCreative();};
+[{id:"all",label:"Todas"},...locs.map(k=>({id:k,label:k}))].forEach(t=>{
+  const b=document.createElement("button");b.className="loc-tab"+(t.id==="all"?" active":"");b.textContent=t.label;
+  b.onclick=()=>{activeTab=t.id;document.querySelectorAll(".loc-tab").forEach(x=>x.classList.remove("active"));b.classList.add("active");updateCharts();updateCreativeTable();};
   tabsEl.appendChild(b);
 });
 
-// Charts
 let chartImpr=null,chartCtr=null;
-function getAllDays(){
-  const days=new Set();
-  localidades.forEach(k=>RAW[k].daily.forEach(r=>days.add(r.d)));
-  return [...days].sort((a,b)=>a.localeCompare(b));
-}
+function getAllDays(){const days=new Set();locs.forEach(k=>RAW[k].daily.forEach(r=>days.add(r.d)));return[...days].sort((a,b)=>a.localeCompare(b))}
 function updateCharts(){
-  const days=getAllDays();
-  let datasets1=[],datasets2=[];
-  const keys=activeTab==="all"?localidades:[activeTab];
-  keys.forEach((k,i)=>{
-    const ci=activeTab==="all"?i:localidades.indexOf(k);
+  const days=getAllDays();let ds1=[],ds2=[];const keys=activeTab==="all"?locs:[activeTab];
+  keys.forEach(k=>{
     const data=days.map(d=>{const r=RAW[k].daily.find(x=>x.d===d);return r?r.imp:null;});
-    const dctr=days.map(d=>{const r=RAW[k].daily.find(x=>x.d===d);return r&&r.imp>0?parseFloat((r.clk/r.imp*100).toFixed(2)):null;});
-    datasets1.push({label:k,data,borderColor:COLORS[ci],backgroundColor:COLORS[ci]+"33",tension:.3,pointRadius:3,spanGaps:false});
-    datasets2.push({label:k,data:dctr,borderColor:COLORS[ci],backgroundColor:COLORS[ci]+"22",tension:.3,pointRadius:3,spanGaps:false});
+    const dctr=days.map(d=>{const r=RAW[k].daily.find(x=>x.d===d);return r&&r.imp>0?parseFloat((r.clk/r.imp*100).toFixed(3)):null;});
+    ds1.push({label:k,data,borderColor:RAW[k].color,backgroundColor:RAW[k].color+"33",tension:.3,pointRadius:3,spanGaps:false});
+    ds2.push({label:k,data:dctr,borderColor:RAW[k].color,backgroundColor:RAW[k].color+"22",tension:.3,pointRadius:3,spanGaps:false});
   });
   const opts={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:10},maxRotation:45,autoSkip:false}},y:{ticks:{font:{size:10}}}}};
-  if(chartImpr){chartImpr.destroy();}
-  if(chartCtr){chartCtr.destroy();}
-  chartImpr=new Chart(document.getElementById("chartImpr"),{type:"line",data:{labels:days,datasets:datasets1},options:{...opts,scales:{...opts.scales,y:{...opts.scales?.y,title:{display:true,text:"Impresiones",font:{size:10}}}}}});
-  chartCtr=new Chart(document.getElementById("chartCtr"),{type:"line",data:{labels:days,datasets:datasets2},options:{...opts,scales:{...opts.scales,y:{...opts.scales?.y,title:{display:true,text:"CTR %",font:{size:10}}}}}});
-  // legends
-  ["leg1","leg2"].forEach(id=>{
-    document.getElementById(id).innerHTML=keys.map((k,i)=>{const ci=activeTab==="all"?i:localidades.indexOf(k);return`<span style="display:flex;align-items:center"><span class="leg-dot" style="background:${COLORS[ci]}"></span>${k}</span>`;}).join("");
-  });
+  if(chartImpr)chartImpr.destroy();if(chartCtr)chartCtr.destroy();
+  chartImpr=new Chart(document.getElementById("chartImpr"),{type:"line",data:{labels:days,datasets:ds1},options:opts});
+  chartCtr=new Chart(document.getElementById("chartCtr"),{type:"line",data:{labels:days,datasets:ds2},options:opts});
+  ["leg1","leg2"].forEach(id=>{document.getElementById(id).innerHTML=keys.map(k=>`<span class="leg-item"><span class="leg-dot" style="background:${RAW[k].color}"></span>${k}</span>`).join("");});
 }
-
-function updateCreative(){
-  const keys=activeTab==="all"?localidades:[activeTab];
-  const title=activeTab==="all"?"Creatividades — todas las localidades":`Creatividades — ${activeTab}`;
-  document.getElementById("creativeTitle").textContent=title;
-  let rows="";
-  keys.forEach(k=>{
-    RAW[k].creatives.forEach(c=>{
-      const ctr=c.imp>0?(c.clk/c.imp*100).toFixed(2):"-";
-      rows+=`<tr><td>${activeTab==="all"?`<span style="font-size:11px;color:var(--color-text-tertiary)">${k} · </span>`:""}${c.n}</td><td>${c.imp.toLocaleString()}</td><td>${c.clk}</td><td>${ctr}%</td></tr>`;
-    });
-  });
+function updateCreativeTable(){
+  const keys=activeTab==="all"?locs:[activeTab];
+  document.getElementById("creativeTitle").textContent=activeTab==="all"?"Creatividades — todas las localidades":`Creatividades — ${activeTab}`;
+  let rows="";keys.forEach(k=>{RAW[k].creatives.forEach(c=>{const ctr=c.imp>0?(c.clk/c.imp*100).toFixed(2):"-";rows+=`<tr><td><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${RAW[k].color};margin-right:5px"></span>${k}</td><td>${c.n}</td><td>${c.imp.toLocaleString()}</td><td>${c.clk}</td><td>${ctr}%</td></tr>`;});});
   document.getElementById("creativeBody").innerHTML=rows;
 }
+updateCharts();updateCreativeTable();
 
-updateCharts();
-updateCreative();
+/* ===== VIEW 2 ===== */
+let selectedLoc=null;
+function buildLocCards(){
+  const g=document.getElementById("locGrid");g.innerHTML="";
+  locs.forEach(k=>{
+    const imp=totalImp(k),clk=totalClk(k),ctr=ctrMedio(k),pct=pctObj(k);
+    const d=document.createElement("div");d.className="loc-card"+(selectedLoc===k?" selected":"");
+    d.innerHTML=`<div class="loc-name"><span class="dot" style="background:${RAW[k].color}"></span>${k}</div><div class="loc-meta">${RAW[k].fechas}</div><div class="loc-kpis"><div class="lk"><div class="lk-label">Impresiones</div><div class="lk-val">${(imp/1000).toFixed(1)}k</div></div><div class="lk"><div class="lk-label">Clicks</div><div class="lk-val">${clk}</div></div><div class="lk"><div class="lk-label">CTR</div><div class="lk-val">${ctr.toFixed(2)}%</div></div><div class="lk"><div class="lk-label">Obj. impr.</div><div class="lk-val">${(RAW[k].objetivo/1000).toFixed(0)}k</div></div></div><div class="prog-wrap"><div class="prog-bg"><div class="prog-fill" style="width:${pct.toFixed(1)}%;background:${RAW[k].color}"></div></div><span class="prog-pct">${pct.toFixed(1)}%</span>${badgeHTML(pct)}</div>`;
+    d.onclick=()=>{selectedLoc=selectedLoc===k?null:k;buildLocCards();buildCreativeDetail();};
+    g.appendChild(d);
+  });
+}
+function buildRankings(){
+  const byImp=[...locs].sort((a,b)=>totalImp(b)-totalImp(a));
+  const byCtr=[...locs].sort((a,b)=>ctrMedio(b)-ctrMedio(a));
+  ["rankImpr","rankCtr"].forEach((id,isCtrl)=>{
+    const arr=isCtrl?byCtr:byImp;const max=isCtrl?ctrMedio(arr[0]):totalImp(arr[0]);
+    document.getElementById(id).innerHTML=arr.map((k,i)=>{const val=isCtrl?ctrMedio(k):totalImp(k);const bw=max>0?val/max*100:0;const disp=isCtrl?val.toFixed(2)+"%":(val/1000).toFixed(1)+"k";return`<div class="ranking-row"><span class="rank-num">${i+1}</span><span class="rank-name">${k}</span><div class="rank-bar-wrap"><div class="rank-bar" style="width:${bw.toFixed(1)}%;background:${RAW[k].color}"></div></div><span class="rank-val">${disp}</span></div>`;}).join("");
+  });
+}
+function buildBarCharts(){
+  const labels=locs.map(k=>k.length>10?k.substring(0,10)+"…":k);
+  const imps=locs.map(k=>totalImp(k));const objs=locs.map(k=>RAW[k].objetivo);
+  const ctrs=locs.map(k=>parseFloat(ctrMedio(k).toFixed(3)));const colors=locs.map(k=>RAW[k].color);
+  const opts2={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:9},maxRotation:30}},y:{ticks:{font:{size:10}}}}};
+  new Chart(document.getElementById("c1"),{type:"bar",data:{labels,datasets:[{label:"Objetivo",data:objs,backgroundColor:locs.map(k=>RAW[k].color+"33"),borderColor:locs.map(k=>RAW[k].color),borderWidth:1},{label:"Impresiones",data:imps,backgroundColor:colors,borderWidth:0}]},options:{...opts2,scales:{x:{ticks:{font:{size:9},maxRotation:30}},y:{ticks:{font:{size:10},callback:v=>(v/1000).toFixed(0)+"k"}}}}});
+  new Chart(document.getElementById("c2"),{type:"bar",data:{labels,datasets:[{label:"CTR %",data:ctrs,backgroundColor:colors,borderWidth:0}]},options:{...opts2,scales:{x:{ticks:{font:{size:9},maxRotation:30}},y:{ticks:{font:{size:10},callback:v=>v.toFixed(2)+"%"}}}}});
+}
+function buildCreativeDetail(){
+  const keys=selectedLoc?[selectedLoc]:locs;
+  document.getElementById("detailTitle").textContent=selectedLoc?`Detalle de creatividades — ${selectedLoc}`:"Detalle de creatividades — todas las localidades";
+  let html="";
+  keys.forEach(k=>{
+    const best=bestCr(k),imp=totalImp(k),pct=pctObj(k);
+    html+=`<div style="margin-bottom:1.5rem">`;
+    if(!selectedLoc) html+=`<div style="font-size:12px;font-weight:500;color:var(--txt1);margin-bottom:6px;display:flex;align-items:center;gap:6px"><span class="dot" style="background:${RAW[k].color}"></span>${k}</div>`;
+    html+=`<div class="cr-grid">`;
+    RAW[k].creatives.forEach(c=>{const ctr=c.imp>0?(c.clk/c.imp*100).toFixed(2):"-";const ib=c===best;html+=`<div class="cr-card" style="${ib?`border-color:${RAW[k].color}`:""}"><div class="cr-fmt">${c.n}</div><div class="cr-imp">${(c.imp/1000).toFixed(1)}k</div><div class="cr-ctr">CTR ${ctr}%</div>${ib?`<div class="cr-best" style="color:${RAW[k].color}">mejor CTR</div>`:""}</div>`;});
+    html+=`</div>`;
+    const dr=RAW[k].daily.length?Math.round((RAW[k].objetivo-imp)/Math.max(dailyAvg(k),1)):null;
+    html+=`<div class="insight-box"><strong>${k}</strong> acumula <strong>${imp.toLocaleString()} impresiones</strong> (${pct.toFixed(1)}% del objetivo de ${RAW[k].objetivo.toLocaleString()}).`;
+    if(dr!==null&&imp<RAW[k].objetivo) html+=` Al ritmo actual (~${Math.round(dailyAvg(k)).toLocaleString()} imp/día) se necesitarían ~${dr} días más.`;
+    html+=` El mejor formato es <strong>${best.n}</strong> con un CTR de ${(best.imp>0?best.clk/best.imp*100:0).toFixed(2)}%.`;
+    if(!RAW[k].daily.length) html+=` <span style="color:var(--txt2)">(Sin datos diarios disponibles aún.)</span>`;
+    html+=`</div></div>`;
+  });
+  document.getElementById("creativeDetail").innerHTML=html;
+}
+buildLocCards();buildRankings();buildBarCharts();buildCreativeDetail();
+
+/* ===== VIEW 3: SPOTIFY ===== */
+const spAllDays=[...new Set(spLocs.flatMap(k=>SP[k].daily.map(r=>r.d)))].sort((a,b)=>a.localeCompare(b));
+
+// KPIs globales Spotify
+const spTotImps=spLocs.reduce((s,k)=>s+spTotalImp(k),0);
+const spTotClks=spLocs.reduce((s,k)=>s+spTotalClk(k),0);
+const spGlobalCtr=spTotImps>0?spTotClks/spTotImps:0;
+const spBestLoc=spLocs.reduce((b,k)=>spCtr(k)>spCtr(b)?k:b,spLocs[0]);
+
+document.getElementById("spKpiGlobal").innerHTML=`
+<div class="kpi"><div class="kpi-label">Impresiones totales</div><div class="kpi-value">${(spTotImps/1000).toFixed(1)}k</div><div class="kpi-sub">4 localidades · 10 días</div></div>
+<div class="kpi"><div class="kpi-label">Clics totales</div><div class="kpi-value">${spTotClks}</div><div class="kpi-sub">acumulados en audio</div></div>
+<div class="kpi"><div class="kpi-label">CTR global (‱)</div><div class="kpi-value">${(spGlobalCtr*10000).toFixed(2)}</div><div class="kpi-sub">por diez mil impresiones</div></div>
+<div class="kpi"><div class="kpi-label">Mejor localidad</div><div class="kpi-value" style="font-size:15px;line-height:1.3">${spBestLoc}</div><div class="kpi-sub">${(spCtr(spBestLoc)*10000).toFixed(2)} ‱</div></div>`;
+
+// Tabs Spotify
+let spActive="all";
+let spCI=null,spCK=null,spVD=null;
+const spTabsEl=document.getElementById("spLocTabs");
+[{id:"all",label:"Todas"},...spLocs.map(k=>({id:k,label:k}))].forEach(t=>{
+  const b=document.createElement("button");b.className="sp-loc-tab"+(t.id==="all"?" active":"");b.textContent=t.label;
+  b.onclick=()=>{spActive=t.id;document.querySelectorAll(".sp-loc-tab").forEach(x=>x.classList.remove("active"));b.classList.add("active");renderSpotify();};
+  spTabsEl.appendChild(b);
+});
+
+function renderSpotify(){
+  const keys=spActive==="all"?spLocs:[spActive];
+  const GREEN="#1DB954";
+  const baseOpts={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:spActive==="all",position:"bottom",labels:{font:{size:10},boxWidth:10}}},scales:{x:{ticks:{font:{size:10},maxRotation:45,autoSkip:false}},y:{ticks:{font:{size:10},beginAtZero:true}}}};
+
+  // Impresiones
+  let ds1=keys.map(k=>{
+    const data=spAllDays.map(d=>{const r=SP[k].daily.find(x=>x.d===d);return r?r.imp:null;});
+    const col=spActive==="all"?SP[k].color:GREEN;
+    return{label:k,data,borderColor:col,backgroundColor:col+(spActive==="all"?"33":"44"),tension:.3,pointRadius:3,fill:spActive!=="all",spanGaps:false};
+  });
+  // Clics
+  let ds2=keys.map(k=>{
+    const data=spAllDays.map(d=>{const r=SP[k].daily.find(x=>x.d===d);return r?r.clk:null;});
+    const col=spActive==="all"?SP[k].color:GREEN;
+    return{label:k,data,borderColor:col,backgroundColor:col+(spActive==="all"?"33":"44"),tension:.3,pointRadius:3,fill:spActive!=="all",spanGaps:false};
+  });
+
+  if(spCI)spCI.destroy();if(spCK)spCK.destroy();
+  spCI=new Chart(document.getElementById("spChartImpr"),{type:"line",data:{labels:spAllDays,datasets:ds1},options:baseOpts});
+  spCK=new Chart(document.getElementById("spChartClk"),{type:"line",data:{labels:spAllDays,datasets:ds2},options:baseOpts});
+
+  // Tabla
+  document.getElementById("spTableTitle").textContent=spActive==="all"?"Datos diarios — todas las localidades":`Datos diarios — ${spActive}`;
+  let rows="";
+  keys.forEach(k=>{
+    SP[k].daily.forEach(r=>{
+      const ctr=r.imp>0?(r.clk/r.imp*10000).toFixed(2):"-";
+      rows+=`<tr><td><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${SP[k].color};margin-right:6px"></span>${k}</td><td>${r.d}</td><td>${r.imp.toLocaleString()}</td><td>${r.clk}</td><td>${ctr} ‱</td></tr>`;
+    });
+    const ti=spTotalImp(k),tc=spTotalClk(k),tctr=ti>0?(tc/ti*10000).toFixed(2):"-";
+    rows+=`<tr class="tr-total"><td><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${SP[k].color};margin-right:6px"></span>Total ${k}</td><td>06/04–15/04</td><td>${ti.toLocaleString()}</td><td>${tc}</td><td>${tctr} ‱</td></tr>`;
+  });
+  document.getElementById("spTableBody").innerHTML=rows;
+
+  // Rankings
+  const byImp=[...spLocs].sort((a,b)=>spTotalImp(b)-spTotalImp(a));
+  const byCtr=[...spLocs].sort((a,b)=>spCtr(b)-spCtr(a));
+  const maxI=spTotalImp(byImp[0]);const maxC=spCtr(byCtr[0]);
+  document.getElementById("spRankImpr").innerHTML=byImp.map((k,i)=>{const val=spTotalImp(k);const bw=maxI>0?val/maxI*100:0;return`<div class="ranking-row"><span class="rank-num">${i+1}</span><span class="rank-name">${k}</span><div class="rank-bar-wrap"><div class="rank-bar" style="width:${bw.toFixed(1)}%;background:#1DB954"></div></div><span class="rank-val">${(val/1000).toFixed(1)}k</span></div>`;}).join("");
+  document.getElementById("spRankCtr").innerHTML=byCtr.map((k,i)=>{const val=spCtr(k);const bw=maxC>0?val/maxC*100:0;return`<div class="ranking-row"><span class="rank-num">${i+1}</span><span class="rank-name">${k}</span><div class="rank-bar-wrap"><div class="rank-bar" style="width:${bw.toFixed(1)}%;background:#1DB954"></div></div><span class="rank-val">${(val*10000).toFixed(2)} ‱</span></div>`;}).join("");
+
+  // Spotify vs Display
+  const vsLocs=spLocs.filter(k=>RAW[k]);
+  const vsLabels=vsLocs.map(k=>k.length>12?k.substring(0,12)+"…":k);
+  if(spVD)spVD.destroy();
+  spVD=new Chart(document.getElementById("spVsDisplay"),{
+    type:"bar",
+    data:{
+      labels:vsLabels,
+      datasets:[
+        {label:"Display (imp.)",data:vsLocs.map(k=>totalImp(k)),backgroundColor:vsLocs.map(k=>RAW[k].color),borderWidth:0,order:2,yAxisID:"y"},
+        {label:"Spotify (imp.)",data:vsLocs.map(k=>spTotalImp(k)),borderColor:GREEN,backgroundColor:"transparent",borderWidth:2.5,type:"line",tension:.3,pointRadius:6,pointBackgroundColor:GREEN,order:1,yAxisID:"y"}
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,interaction:{mode:"index",intersect:false},plugins:{legend:{display:true,position:"bottom",labels:{font:{size:11},boxWidth:12}}},scales:{y:{ticks:{font:{size:10},callback:v=>(v/1000).toFixed(0)+"k"},title:{display:true,text:"Impresiones",font:{size:10}}},x:{ticks:{font:{size:10}}}}}
+  });
+}
+
+renderSpotify();
 </script>
+</body>
+</html>
