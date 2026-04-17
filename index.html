@@ -1,0 +1,191 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans)}
+.dash{padding:1rem 0}
+.header{margin-bottom:1.5rem}
+.header h1{font-size:20px;font-weight:500;color:var(--color-text-primary)}
+.header p{font-size:13px;color:var(--color-text-secondary);margin-top:4px}
+.section-title{font-size:13px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.05em;margin:1.5rem 0 .75rem}
+.kpi-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:1.5rem}
+.kpi{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:.9rem 1rem}
+.kpi-label{font-size:12px;color:var(--color-text-secondary);margin-bottom:4px}
+.kpi-value{font-size:22px;font-weight:500;color:var(--color-text-primary)}
+.kpi-sub{font-size:11px;color:var(--color-text-tertiary);margin-top:2px}
+.tabs{display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap}
+.tab{padding:5px 12px;border:0.5px solid var(--color-border-secondary);border-radius:20px;font-size:12px;cursor:pointer;background:transparent;color:var(--color-text-secondary);transition:.15s}
+.tab.active{background:var(--color-background-primary);border-color:var(--color-border-primary);color:var(--color-text-primary);font-weight:500}
+.tab:hover:not(.active){background:var(--color-background-secondary)}
+.charts-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:1.5rem}
+.chart-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1rem 1.25rem}
+.chart-title{font-size:13px;font-weight:500;color:var(--color-text-secondary);margin-bottom:.75rem}
+.chart-wrap{position:relative;width:100%;height:200px}
+.table-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1rem 1.25rem;margin-bottom:1.5rem}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;font-weight:500;color:var(--color-text-secondary);padding:6px 8px;border-bottom:0.5px solid var(--color-border-tertiary)}
+td{padding:7px 8px;color:var(--color-text-primary);border-bottom:0.5px solid var(--color-border-tertiary)}
+tr:last-child td{border-bottom:none}
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:500}
+.badge-blue{background:#E6F1FB;color:#0C447C}
+.badge-green{background:#EAF3DE;color:#3B6D11}
+.badge-amber{background:#FAEEDA;color:#854F0B}
+.badge-red{background:#FCEBEB;color:#A32D2D}
+.progress-wrap{background:var(--color-background-secondary);border-radius:4px;height:6px;flex:1}
+.progress-bar{height:6px;border-radius:4px;background:#378ADD}
+.legend{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:8px;font-size:11px;color:var(--color-text-secondary)}
+.leg-dot{width:10px;height:10px;border-radius:2px;display:inline-block;margin-right:4px}
+</style>
+
+<div class="dash">
+<h2 class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden">Dashboard de control de campañas CHC Energía por localidad</h2>
+
+<div class="header">
+  <h1>CHC Energía — Control de campañas</h1>
+  <p>Periodo activo: Abr – May 2026 · Modelo: CPM · 6 localidades</p>
+</div>
+
+<div class="kpi-grid" id="kpiGlobal"></div>
+
+<div class="section-title">Vista por localidad</div>
+<div class="tabs" id="tabs"></div>
+
+<div class="charts-row">
+  <div class="chart-card">
+    <div class="chart-title">Impresiones diarias</div>
+    <div class="legend" id="leg1"></div>
+    <div class="chart-wrap"><canvas id="chartImpr" role="img" aria-label="Impresiones diarias por localidad"></canvas></div>
+  </div>
+  <div class="chart-card">
+    <div class="chart-title">CTR diario (%)</div>
+    <div class="legend" id="leg2"></div>
+    <div class="chart-wrap"><canvas id="chartCtr" role="img" aria-label="CTR diario por localidad"></canvas></div>
+  </div>
+</div>
+
+<div class="table-card">
+  <div class="chart-title">Resumen por localidad</div>
+  <table id="tableResumen">
+    <thead><tr><th>Localidad</th><th>Fechas</th><th>Objetivo</th><th>Impressiones</th><th>Clicks</th><th>CTR medio</th><th>% objetivo</th><th>Estado</th></tr></thead>
+    <tbody id="tableBody"></tbody>
+  </table>
+</div>
+
+<div class="table-card" id="creativeCard">
+  <div class="chart-title" id="creativeTitle">Creatividades</div>
+  <table>
+    <thead><tr><th>Creatividad</th><th>Impresiones</th><th>Clics</th><th>CTR</th></tr></thead>
+    <tbody id="creativeBody"></tbody>
+  </table>
+</div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const RAW = {
+  "Roquetas de Mar":{fechas:"06/04 – 31/05/2026",objetivo:88889,modelo:"CPM",daily:[{d:"06/04",imp:1850,clk:48},{d:"07/04",imp:1931,clk:26},{d:"08/04",imp:1937,clk:16},{d:"09/04",imp:1599,clk:23},{d:"10/04",imp:1310,clk:11},{d:"11/04",imp:1345,clk:8},{d:"12/04",imp:1384,clk:12},{d:"13/04",imp:904,clk:8}],creatives:[{n:"320x50",imp:7211,clk:60},{n:"300x250",imp:3431,clk:33},{n:"728x90",imp:1049,clk:27},{n:"300x600",imp:383,clk:16},{n:"320x480",imp:186,clk:16}]},
+  "Zahara de los Atunes":{fechas:"06/04 – 31/05/2026",objetivo:118778,modelo:"CPM",daily:[{d:"06/04",imp:3024,clk:36},{d:"07/04",imp:3148,clk:24},{d:"08/04",imp:3191,clk:18},{d:"09/04",imp:3006,clk:15},{d:"10/04",imp:3010,clk:14},{d:"11/04",imp:2234,clk:9},{d:"12/04",imp:2416,clk:7},{d:"13/04",imp:2375,clk:13}],creatives:[{n:"320x50",imp:12973,clk:50},{n:"300x250",imp:5406,clk:30},{n:"728x90",imp:3409,clk:31},{n:"300x600",imp:423,clk:12},{n:"320x480",imp:193,clk:13}]},
+  "Albox":{fechas:"06/04 – 31/05/2026",objetivo:122222,modelo:"CPM",daily:[{d:"06/04",imp:1000,clk:0},{d:"07/04",imp:1021,clk:2},{d:"08/04",imp:1274,clk:32},{d:"09/04",imp:1345,clk:36},{d:"10/04",imp:2374,clk:13},{d:"11/04",imp:2352,clk:10},{d:"13/04",imp:2232,clk:12}],creatives:[{n:"320x50",imp:8736,clk:46},{n:"300x250",imp:3122,clk:24},{n:"728x90",imp:1608,clk:25},{n:"300x600",imp:226,clk:12},{n:"320x480",imp:163,clk:11}]},
+  "Águilas":{fechas:"06/04 – 31/05/2026",objetivo:77778,modelo:"CPM",daily:[{d:"06/04",imp:1715,clk:32},{d:"07/04",imp:1561,clk:18},{d:"08/04",imp:1583,clk:11},{d:"09/04",imp:1543,clk:9},{d:"10/04",imp:1721,clk:6},{d:"11/04",imp:1603,clk:17},{d:"12/04",imp:1659,clk:10},{d:"13/04",imp:1543,clk:11}],creatives:[{n:"320x50",imp:7520,clk:43},{n:"300x250",imp:3116,clk:26},{n:"728x90",imp:1889,clk:21},{n:"300x600",imp:302,clk:12},{n:"320x480",imp:101,clk:12}]},
+  "La Felguera":{fechas:"19/03 – 30/04/2026",objetivo:88889,modelo:"CPM",daily:[],creatives:[{n:"320x50",imp:12365,clk:38},{n:"300x250",imp:8328,clk:24},{n:"728x90",imp:6013,clk:26},{n:"300x600",imp:1950,clk:23},{n:"320x480",imp:934,clk:16}]},
+  "Almanzora Vera Garrucha":{fechas:"13/04 – 31/05/2026",objetivo:501111,modelo:"CPM",daily:[],creatives:[{n:"320x50",imp:2633,clk:15},{n:"300x250",imp:1192,clk:15},{n:"728x90",imp:384,clk:7},{n:"300x600",imp:205,clk:6},{n:"320x480",imp:67,clk:7}]}
+};
+
+const COLORS=["#378ADD","#1D9E75","#D85A30","#D4537E","#7F77DD","#639922"];
+const localidades=Object.keys(RAW);
+
+function totalImp(k){return RAW[k].daily.reduce((s,r)=>s+r.imp,0)||(RAW[k].creatives.reduce((s,c)=>s+c.imp,0))}
+function totalClk(k){return RAW[k].daily.reduce((s,r)=>s+r.clk,0)||(RAW[k].creatives.reduce((s,c)=>s+c.clk,0))}
+function ctrMedio(k){const i=totalImp(k),c=totalClk(k);return i>0?(c/i*100):0}
+function pctObj(k){return Math.min(totalImp(k)/RAW[k].objetivo*100,100)}
+
+// KPIs globales
+const totalImps=localidades.reduce((s,k)=>s+totalImp(k),0);
+const totalClks=localidades.reduce((s,k)=>s+totalClk(k),0);
+const totalObj=localidades.reduce((s,k)=>s+RAW[k].objetivo,0);
+const globalCtr=(totalClks/totalImps*100);
+const globalPct=(totalImps/totalObj*100);
+
+document.getElementById("kpiGlobal").innerHTML=`
+<div class="kpi"><div class="kpi-label">Impresiones totales</div><div class="kpi-value">${(totalImps/1000).toFixed(1)}k</div><div class="kpi-sub">de ${(totalObj/1000).toFixed(0)}k objetivo</div></div>
+<div class="kpi"><div class="kpi-label">Clicks totales</div><div class="kpi-value">${totalClks.toLocaleString()}</div><div class="kpi-sub">acumulados</div></div>
+<div class="kpi"><div class="kpi-label">CTR global</div><div class="kpi-value">${globalCtr.toFixed(2)}%</div><div class="kpi-sub">clicks / impresiones</div></div>
+<div class="kpi"><div class="kpi-label">Cumplimiento global</div><div class="kpi-value">${globalPct.toFixed(1)}%</div><div class="kpi-sub">${localidades.length} localidades activas</div></div>`;
+
+// Tabla resumen
+const tbody=document.getElementById("tableBody");
+localidades.forEach((k,i)=>{
+  const imp=totalImp(k),clk=totalClk(k),ctr=ctrMedio(k),pct=pctObj(k);
+  let badge,bclass;
+  if(pct>=80){badge="En objetivo";bclass="badge-green";}
+  else if(pct>=30){badge="En curso";bclass="badge-blue";}
+  else{badge="Inicio";bclass="badge-amber";}
+  tbody.innerHTML+=`<tr>
+    <td><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${COLORS[i]};margin-right:6px"></span>${k}</td>
+    <td>${RAW[k].fechas}</td>
+    <td>${RAW[k].objetivo.toLocaleString()}</td>
+    <td>${imp.toLocaleString()}</td>
+    <td>${clk.toLocaleString()}</td>
+    <td>${ctr.toFixed(2)}%</td>
+    <td style="min-width:120px"><div style="display:flex;align-items:center;gap:8px"><div class="progress-wrap"><div class="progress-bar" style="width:${pct.toFixed(1)}%;background:${COLORS[i]}"></div></div><span style="font-size:11px;min-width:34px;text-align:right">${pct.toFixed(1)}%</span></div></td>
+    <td><span class="badge ${bclass}">${badge}</span></td>
+  </tr>`;
+});
+
+// Tabs
+let activeTab="all";
+const tabsEl=document.getElementById("tabs");
+[{id:"all",label:"Todas"},...localidades.map((k,i)=>({id:k,label:k}))].forEach(t=>{
+  const b=document.createElement("button");
+  b.className="tab"+(t.id==="all"?" active":"");
+  b.textContent=t.label;
+  b.onclick=()=>{activeTab=t.id;document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));b.classList.add("active");updateCharts();updateCreative();};
+  tabsEl.appendChild(b);
+});
+
+// Charts
+let chartImpr=null,chartCtr=null;
+function getAllDays(){
+  const days=new Set();
+  localidades.forEach(k=>RAW[k].daily.forEach(r=>days.add(r.d)));
+  return [...days].sort((a,b)=>a.localeCompare(b));
+}
+function updateCharts(){
+  const days=getAllDays();
+  let datasets1=[],datasets2=[];
+  const keys=activeTab==="all"?localidades:[activeTab];
+  keys.forEach((k,i)=>{
+    const ci=activeTab==="all"?i:localidades.indexOf(k);
+    const data=days.map(d=>{const r=RAW[k].daily.find(x=>x.d===d);return r?r.imp:null;});
+    const dctr=days.map(d=>{const r=RAW[k].daily.find(x=>x.d===d);return r&&r.imp>0?parseFloat((r.clk/r.imp*100).toFixed(2)):null;});
+    datasets1.push({label:k,data,borderColor:COLORS[ci],backgroundColor:COLORS[ci]+"33",tension:.3,pointRadius:3,spanGaps:false});
+    datasets2.push({label:k,data:dctr,borderColor:COLORS[ci],backgroundColor:COLORS[ci]+"22",tension:.3,pointRadius:3,spanGaps:false});
+  });
+  const opts={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:10},maxRotation:45,autoSkip:false}},y:{ticks:{font:{size:10}}}}};
+  if(chartImpr){chartImpr.destroy();}
+  if(chartCtr){chartCtr.destroy();}
+  chartImpr=new Chart(document.getElementById("chartImpr"),{type:"line",data:{labels:days,datasets:datasets1},options:{...opts,scales:{...opts.scales,y:{...opts.scales?.y,title:{display:true,text:"Impresiones",font:{size:10}}}}}});
+  chartCtr=new Chart(document.getElementById("chartCtr"),{type:"line",data:{labels:days,datasets:datasets2},options:{...opts,scales:{...opts.scales,y:{...opts.scales?.y,title:{display:true,text:"CTR %",font:{size:10}}}}}});
+  // legends
+  ["leg1","leg2"].forEach(id=>{
+    document.getElementById(id).innerHTML=keys.map((k,i)=>{const ci=activeTab==="all"?i:localidades.indexOf(k);return`<span style="display:flex;align-items:center"><span class="leg-dot" style="background:${COLORS[ci]}"></span>${k}</span>`;}).join("");
+  });
+}
+
+function updateCreative(){
+  const keys=activeTab==="all"?localidades:[activeTab];
+  const title=activeTab==="all"?"Creatividades — todas las localidades":`Creatividades — ${activeTab}`;
+  document.getElementById("creativeTitle").textContent=title;
+  let rows="";
+  keys.forEach(k=>{
+    RAW[k].creatives.forEach(c=>{
+      const ctr=c.imp>0?(c.clk/c.imp*100).toFixed(2):"-";
+      rows+=`<tr><td>${activeTab==="all"?`<span style="font-size:11px;color:var(--color-text-tertiary)">${k} · </span>`:""}${c.n}</td><td>${c.imp.toLocaleString()}</td><td>${c.clk}</td><td>${ctr}%</td></tr>`;
+    });
+  });
+  document.getElementById("creativeBody").innerHTML=rows;
+}
+
+updateCharts();
+updateCreative();
+</script>
